@@ -54,24 +54,27 @@ def get_random_entry():
 # Удаление записи
 @app.route('/delete_entry', methods=['POST'])
 def delete_entry():
-    ensure_data_file_exists()
     entry_to_delete = request.json
     if entry_to_delete:
-        # Читаем текущие записи
-        with open(DATA_FILE, mode='r', encoding='utf-8') as file:
-            reader = list(csv.reader(file))
+        try:
+            # Читаем текущие записи
+            with open(DATA_FILE, mode='r', encoding='utf-8') as file:
+                rows = list(csv.reader(file))
 
-        # Фильтруем запись, которую нужно удалить
-        updated_entries = [entry for entry in reader if entry != [entry_to_delete['name'], entry_to_delete['word']]]
+            # Удаляем запись, которую нужно удалить
+            updated_entries = [entry for entry in rows if entry != [entry_to_delete['name'], entry_to_delete['word']]]
 
-        # Записываем обновленный список обратно в файл
-        with open(DATA_FILE, mode='w', newline='', encoding='utf-8') as file:
-            writer = csv.writer(file)
-            writer.writerows(updated_entries)
-        
-        return jsonify({'success': True})
-    return jsonify({'success': False}), 400
+            # Записываем обновленный список обратно в CSV-файл
+            with open(DATA_FILE, mode='w', newline='', encoding='utf-8') as file:
+                writer = csv.writer(file)
+                writer.writerows(updated_entries)
+
+            return jsonify({'success': True})
+        except Exception as e:
+            print(f"Ошибка при удалении записи: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 400
+    return jsonify({'success': False, 'message': 'Не удалось получить данные для удаления'}), 400
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=5000)

@@ -131,3 +131,11 @@ body {
                 url('./pics/staraia-plenka-19.png') no-repeat top center;
     background-size: cover;
 }
+
+#result div {
+    font-size: 22px; /* Увеличивает шрифт на два пункта */
+}
+
+button, a {
+    font-size: 19px; /* Уменьшает шрифт на один пункт */
+}
