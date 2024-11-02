@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My GitHub Pages Site</title>
+    <script>
+        // Функция для загрузки содержимого другого HTML-файла
+        function loadHTML(url, target) {
+            fetch(url)
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById(target).innerHTML = data;
+                })
+                .catch(error => console.error('Error loading HTML:', error));
+        }
+
+        // Загрузка содержимого main.html при загрузке страницы
+        window.onload = function() {
+            loadHTML('templates/main.html', 'content');
+        };
+    </script>
+</head>
+<body>
+    <div id="content"></div>
+</body>
+</html>
