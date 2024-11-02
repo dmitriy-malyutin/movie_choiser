@@ -13,43 +13,56 @@ document.addEventListener('DOMContentLoaded', function() {
                         'Content-Type': 'application/json',
                     },
                 });
-    
+
                 const result = await response.json();
                 const resultDiv = document.getElementById('result');
-    
+
                 if (response.ok) {
                     goButton.style.display = 'none';
                     resultDiv.innerHTML = `
-                        <div>Победитель ${result.name}</div> 
-                        <div>Фильм ${result.word}</div>
+                        <div>Победитель: ${result.name}</div> 
+                        <div>Фильм: ${result.word}</div>
                         <div>
                             <button id="deleteButton">Удалить фильм</button>
                             <button id="replayButton">Переиграть</button>
                         </div>
                     `;
-    
+
+                    // Обработчик для кнопки удаления
                     document.getElementById('deleteButton').addEventListener('click', async function() {
-                        await fetch('/delete_entry', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(result),
-                        });
-                        resultDiv.innerText = 'Фильм удален.';
-                        goButton.style.display = 'inline-block';
+                        try {
+                            const deleteResponse = await fetch('/delete_entry', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify(result),
+                            });
+
+                            if (deleteResponse.ok) {
+                                resultDiv.innerText = 'Фильм удален.';
+                                goButton.style.display = 'inline-block';
+                            } else {
+                                const errorData = await deleteResponse.json();
+                                console.error('Ошибка при удалении записи:', errorData.message);
+                                alert('Ошибка при удалении записи.');
+                            }
+                        } catch (error) {
+                            console.error('Ошибка запроса при удалении:', error);
+                        }
                     });
-    
+
+                    // Обработчик для кнопки переиграть
                     document.getElementById('replayButton').addEventListener('click', function() {
                         goButton.click();
                     });
-    
                 } else {
                     goButton.style.display = 'none';
                     resultDiv.innerText = 'Не добавлено ни одной записи, хотите добавить?';
                 }
             } catch (error) {
-                console.error('Ошибка:', error);
+                console.error('Ошибка запроса:', error);
+                document.getElementById('result').innerText = 'Произошла ошибка при получении данных.';
             }
         });
     }
@@ -79,11 +92,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.log('Запись успешно удалена.');
                     alert('Запись удалена.');
                 } else {
-                    console.error('Ошибка при удалении записи.');
+                    const errorData = await response.json();
+                    console.error('Ошибка при удалении записи:', errorData.message);
                     alert('Ошибка при удалении записи.');
                 }
             } catch (error) {
                 console.error('Ошибка запроса:', error);
+                alert('Произошла ошибка при запросе.');
             }
         });
     });

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Главная</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Время выбрать фильм</h1>
+        <button id="goButton">Поехали</button>
+        <div id="result"></div>
+        <a id="addLink" href="{{ url_for('submit') }}">Добавить запись</a>
+        <form method="POST" action="{{ url_for('logout') }}">
+            <button type="submit" style="margin-top: 20px;">Выход</button>
+        </form>        
+    </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

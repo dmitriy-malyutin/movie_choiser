@@ -2,15 +2,14 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Авторизация</title>
+    <title>Регистрация</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="container">
-        <h1>Добро пожаловать в Дубино-рощинский киноклуб</h1>
-        <h2>Авторизация</h2>
+        <h1>Регистрация</h1>
         <div class="form-container">
-            <form method="POST" action="{{ url_for('auth') }}">
+            <form method="POST" action="{{ url_for('register') }}">
                 <div class="input-group">
                     <label for="username">Логин:</label>
                     <input type="text" name="username" required>
@@ -19,9 +18,9 @@
                     <label for="password">Пароль:</label>
                     <input type="password" name="password" required>
                 </div>
-                <button type="submit">Войти</button>
+                <button type="submit">Зарегистрироваться</button>
             </form>
-            <a href="{{ url_for('register') }}">Регистрация</a>
+            <a href="{{ url_for('index') }}">Назад к авторизации</a>
         </div>
     </div>
 </body>
