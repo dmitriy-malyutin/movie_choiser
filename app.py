@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from flask_caching import Cache
 import psycopg2
 import json
 import random
@@ -7,6 +8,26 @@ from datetime import timedelta
 import os
 
 app = Flask(__name__)
+app.config['CACHE_TYPE'] = 'simple'  # Используем простое кэширование в памяти
+app.config['CACHE_DEFAULT_TIMEOUT'] = 300  # Устанавливаем тайм-аут кэша на 5 минут
+cache = Cache(app)
+
+# Подключение к базе данных
+with open('connections.json') as f:
+    connections = json.load(f)
+    db_config = connections['moovie_chooser']['postgres']
+    secret = connections['secret_key']
+
+app.secret_key = secret
+app.permanent_session_lifetime = timedelta(minutes=30)  # Установка таймаута на 30 минут
+
+conn = psycopg2.connect(
+    host=db_config['host'],
+    port=db_config['port'],
+    dbname=db_config['db'],
+    user=db_config['user'],
+    password=db_config['password']
+)
 
 @app.route('/')
 def index():
@@ -22,7 +43,6 @@ def auth():
         
         # Проверка логина и пароля
         cur = conn.cursor()
-        # Проверяем, существует ли пользователь с правильными данными и подтвержденный
         cur.execute("SELECT * FROM app.users WHERE name = %s AND password = %s AND is_active = True", (username, password))
         user = cur.fetchone()
         
@@ -31,15 +51,15 @@ def auth():
                 session['user_id'] = user[0]  # Сохраняем id пользователя в сессии
                 session.permanent = True  # Сделать сессию постоянной
                 flash('Успешный вход', 'success')
-                return redirect(url_for('home'))  # Переход на главную страницу
+                return redirect(url_for('home'))
             else:
                 flash('Пользователь не подтвержден', 'warning')
-                return redirect(url_for('index'))  # Возврат на страницу авторизации
+                return redirect(url_for('index'))
         else:
             flash('Неверные имя пользователя или пароль', 'danger')
-            return redirect(url_for('index'))  # Возврат на страницу авторизации в случае ошибки
+            return redirect(url_for('index'))
     
-    return redirect(url_for('index'))  # Возврат на страницу авторизации в случае ошибки
+    return redirect(url_for('index'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -57,6 +77,7 @@ def register():
     
     return render_template('register.html')
 
+@cache.cached(timeout=300, key_prefix='movies_data')  # Кэшируем данные на 5 минут
 def get_movies():
     """Получение данных о фильмах из таблицы app.movies."""
     cur = conn.cursor()
@@ -68,12 +89,11 @@ def get_movies():
 @app.route('/home')
 def home():
     """Главная страница после авторизации."""
-    if 'user_id' in session:  # Проверка, авторизован ли пользователь
+    if 'user_id' in session:
         return render_template('home.html')
     flash('Пожалуйста, войдите в систему', 'warning')
     return redirect(url_for('index'))
 
-# Страница добавления записи и просмотр базы
 @app.route('/submit', methods=['GET', 'POST'])
 def submit():
     """Страница с таблицей фильмов."""
@@ -84,13 +104,24 @@ def submit():
         
         # Добавляем новую запись в таблицу фильмов
         if name and word:
-            cur = conn.cursor()
-            cur.execute("INSERT INTO app.movies (offer, movie) VALUES (%s, %s)", (name, word))
-            conn.commit()
-            cur.close()
-            message = 'Запись добавлена!'
+            try:
+                cur = conn.cursor()
+                cur.execute("INSERT INTO app.movies (offer, movie) VALUES (%s, %s)", (name, word))
+                conn.commit()
+                
+                cache.delete('movies_data')  # Очищаем кэш для актуализации данных
+                
+                # Перенаправляем на страницу 'submit' с GET-запросом
+                flash('Запись добавлена!', 'success')
+                return redirect(url_for('submit'))  # Применяем PRG (Post/Redirect/Get)
+            
+            except psycopg2.errors.UniqueViolation:
+                conn.rollback()  # Откатываем изменения в случае ошибки уникальности
+                flash('Такая запись уже существует', 'warning')
+            finally:
+                cur.close()
     
-    # Получение данных о фильмах из базы данных
+    # Получение данных о фильмах из базы данных или кэша
     movies = get_movies()
     return render_template('submit.html', rows=movies, message=message)
 
@@ -101,13 +132,11 @@ def logout():
     flash('Вы вышли из системы', 'info')
     return redirect(url_for('index'))
 
-# Получение и удаление случайной строки
 @app.route('/get_random', methods=['POST'])
 def get_random_entry():
     """Получение случайной записи из таблицы app.movies."""
     try:
         cur = conn.cursor()
-        # Выбор случайной записи
         cur.execute("SELECT offer, movie FROM app.movies ORDER BY RANDOM() LIMIT 1")
         chosen_entry = cur.fetchone()
         cur.close()
@@ -121,8 +150,6 @@ def get_random_entry():
         print(f"Ошибка при получении случайной записи: {e}")
         return jsonify({'error': 'Ошибка сервера'}), 500
 
-
-# Удаление записи
 @app.route('/delete_entry', methods=['POST'])
 def delete_entry():
     """Удаление записи из таблицы app.movies по имени и описанию."""
@@ -133,13 +160,11 @@ def delete_entry():
         
         if name and word:
             try:
-                # Удаление записи из базы данных
                 cur = conn.cursor()
                 cur.execute("DELETE FROM app.movies WHERE offer = %s AND movie = %s", (name, word))
                 conn.commit()
                 cur.close()
-
-                # Проверяем, было ли удалено что-то
+                cache.delete('movies_data')  # Удаляем кэш при удалении записи
                 if cur.rowcount > 0:
                     return jsonify({'success': True})
                 else:
@@ -150,23 +175,5 @@ def delete_entry():
                 return jsonify({'success': False, 'message': str(e)}), 400
     return jsonify({'success': False, 'message': 'Не удалось получить данные для удаления'}), 400
 
-
 if __name__ == '__main__':
-    # Подключение к базе данных
-    with open('connections.json') as f:
-        connections = json.load(f)
-        db_config = connections['moovie_chooser']['postgres']
-        secret = connections['secret_key']
-
-    app.secret_key = secret
-    app.permanent_session_lifetime = timedelta(hours=1)  # Установка таймаута на 1 час
-        
-    conn = psycopg2.connect(
-        host=db_config['host'],
-        port=db_config['port'],
-        dbname=db_config['db'],
-        user=db_config['user'],
-        password=db_config['password']
-    )
-
     app.run(debug=True, host='0.0.0.0', port=5000)
