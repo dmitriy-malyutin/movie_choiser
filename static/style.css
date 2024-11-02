@@ -1,0 +1,133 @@
+body {
+    background-color: #181818;
+    color: #f5f5f5;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+}
+
+.container {
+    width: 50%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.form-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+}
+
+label {
+    margin-right: 10px;
+}
+
+button, a {
+    background: none;
+    border: none;
+    color: #f5f5f5;
+    font-size: 20px;
+    cursor: pointer;
+    text-decoration: none;
+    margin: 10px;
+    display: inline-block;
+}
+
+button:hover, a:hover {
+    text-decoration: underline;
+}
+
+button:focus, a:focus {
+    outline: none;
+}
+
+input {
+    border: none;
+    border-bottom: 1px solid #f5f5f5; /* Тонкая линия */
+    color: #f5f5f5;
+    background-color: transparent;
+    padding: 5px;
+    box-sizing: border-box;
+    width: 100%; /* Заполняет оставшееся пространство */
+}
+
+input:focus {
+    outline: none; /* Убираем обводку при фокусе */
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    border-bottom: 1px solid #f5f5f5;
+    padding: 10px;
+}
+
+th {
+    background-color: #282828;
+    text-align: left;
+}
+
+td {
+    background-color: #202020;
+    text-align: left;
+}
+
+td:first-child, th:first-child {
+    text-align: center;
+}
+
+td:nth-child(2), th:nth-child(2) {
+    text-align: left;
+}
+
+td:nth-child(3), th:nth-child(3) {
+    text-align: right;
+}
+
+td:last-child, th:last-child {
+    text-align: center;
+}
+
+.delete-btn {
+    background: none;
+    border: none;
+    color: red;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 0;
+}
+
+.delete-btn:hover {
+    text-decoration: none;
+    color: darkred;
+}
+
+body {
+    color: #f5f5f5;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+    background: linear-gradient(to bottom, rgba(24, 24, 24, 0) 1%, #181818), 
+                url('static/pics/staraia-plenka-19.png') no-repeat top center;
+    background-size: cover;
+}
