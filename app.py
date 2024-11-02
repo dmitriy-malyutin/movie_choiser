@@ -37,45 +37,74 @@ def index():
 @app.route('/auth', methods=['GET', 'POST'])
 def auth():
     """Обработка логина пользователя."""
+    message = None
+    message_type = None
+
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         
-        # Проверка логина и пароля
         cur = conn.cursor()
         cur.execute("SELECT * FROM app.users WHERE name = %s AND password = %s AND is_active = True", (username, password))
         user = cur.fetchone()
         
         if user:
             if user[3]:  # Предполагается, что is_valid находится на 4-й позиции
-                session['user_id'] = user[0]  # Сохраняем id пользователя в сессии
-                session.permanent = True  # Сделать сессию постоянной
-                flash('Успешный вход', 'success')
+                session['user_id'] = user[0]
+                session.permanent = True
+                message = 'Успешный вход'
+                message_type = 'success'
                 return redirect(url_for('home'))
             else:
-                flash('Пользователь не подтвержден', 'warning')
-                return redirect(url_for('index'))
+                message = 'Пользователь не подтвержден'
+                message_type = 'warning'
         else:
-            flash('Неверные имя пользователя или пароль', 'danger')
-            return redirect(url_for('index'))
-    
-    return redirect(url_for('index'))
+            message = 'Неверные имя пользователя или пароль'
+            message_type = 'danger'
+        
+    return render_template('index.html', message=message, message_type=message_type)
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     """Обработка регистрации нового пользователя."""
+    message = None  # Сообщение об ошибке или успехе
+    message_type = None  # Тип сообщения ('success' или 'warning')
+
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         
-        # Добавление нового пользователя в базу данных
-        cur = conn.cursor()
-        cur.execute("INSERT INTO app.users (name, password) VALUES (%s, %s)", (username, password))
-        conn.commit()
-        flash('Регистрация успешна! Теперь вы можете войти.', 'success')
-        return redirect(url_for('index'))
+        try:
+            # Проверка на существование пользователя
+            cur = conn.cursor()
+            cur.execute("SELECT * FROM app.users WHERE name = %s", (username,))
+            existing_user = cur.fetchone()
+
+            if existing_user:
+                message = 'Пользователь с таким именем уже существует'
+                message_type = 'warning'
+            else:
+                # Хэшируем пароль перед добавлением
+                hashed_password = generate_password_hash(password)
+                
+                # Вставка нового пользователя
+                cur.execute("INSERT INTO app.users (name, password) VALUES (%s, %s)", (username, hashed_password))
+                conn.commit()
+                message = 'Регистрация успешна!'
+                message_type = 'success'
+                return redirect(url_for('index'))  # Переход на страницу авторизации при успешной регистрации
+
+        except Exception as e:
+            conn.rollback()  # Откат в случае ошибки
+            message = f'Ошибка регистрации: {str(e)}'
+            message_type = 'danger'
+        
+        finally:
+            cur.close()
     
-    return render_template('register.html')
+    return render_template('register.html', message=message, message_type=message_type)
+
 
 @cache.cached(timeout=300, key_prefix='movies_data')  # Кэшируем данные на 5 минут
 def get_movies():
@@ -91,46 +120,46 @@ def home():
     """Главная страница после авторизации."""
     if 'user_id' in session:
         return render_template('home.html')
-    flash('Пожалуйста, войдите в систему', 'warning')
-    return redirect(url_for('index'))
+    return render_template('index.html', message='Пожалуйста, войдите в систему', message_type='warning')
+
 
 @app.route('/submit', methods=['GET', 'POST'])
 def submit():
     """Страница с таблицей фильмов."""
     message = None
+    message_type = None
+
     if request.method == 'POST':
         name = request.form.get('name')
         word = request.form.get('word')
         
-        # Добавляем новую запись в таблицу фильмов
         if name and word:
             try:
                 cur = conn.cursor()
                 cur.execute("INSERT INTO app.movies (offer, movie) VALUES (%s, %s)", (name, word))
                 conn.commit()
-                
-                cache.delete('movies_data')  # Очищаем кэш для актуализации данных
-                
-                # Перенаправляем на страницу 'submit' с GET-запросом
-                flash('Запись добавлена!', 'success')
-                return redirect(url_for('submit'))  # Применяем PRG (Post/Redirect/Get)
+                cache.delete('movies_data')
+                message = 'Запись добавлена!'
+                message_type = 'success'
+                return redirect(url_for('submit'))
             
             except psycopg2.errors.UniqueViolation:
-                conn.rollback()  # Откатываем изменения в случае ошибки уникальности
-                flash('Такая запись уже существует', 'warning')
+                conn.rollback()
+                message = 'Такая запись уже существует'
+                message_type = 'warning'
             finally:
                 cur.close()
     
-    # Получение данных о фильмах из базы данных или кэша
     movies = get_movies()
-    return render_template('submit.html', rows=movies, message=message)
+    return render_template('submit.html', rows=movies, message=message, message_type=message_type)
+
 
 @app.route('/logout', methods=['POST'])
 def logout():
     """Выход из системы."""
     session.pop('user_id', None)
-    flash('Вы вышли из системы', 'info')
-    return redirect(url_for('index'))
+    return render_template('index.html', message='Вы вышли из системы', message_type='info')
+
 
 @app.route('/get_random', methods=['POST'])
 def get_random_entry():

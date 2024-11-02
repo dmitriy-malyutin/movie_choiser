@@ -9,6 +9,12 @@
 <body>
     <div class="container">
         <h1>Добро пожаловать в киноклуб</h1>
+            <!-- Блок для вывода сообщения -->
+            {% if message %}
+            <div class="alert {{ message_type }}">
+                {{ message }}
+                </div>
+            {% endif %}
         <h2>Авторизация</h2>
         <div class="form-container">
             <form method="POST" action="{{ url_for('auth') }}">

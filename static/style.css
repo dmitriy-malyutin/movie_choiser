@@ -128,3 +128,27 @@ td:last-child, th:last-child {
 button, a {
     font-size: 19px; /* Уменьшает шрифт на один пункт */
 }
+
+/* Основные стили для блока сообщения */
+.alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    font-size: 16px;
+    text-align: center;
+}
+
+/* Успешное сообщение */
+.alert.success {
+    color: #155724;
+}
+
+/* Предупреждение */
+.alert.warning {
+    color: #c99700;
+}
+
+/* Сообщение об ошибке */
+.alert.danger {
+    color: #91000f;
+}

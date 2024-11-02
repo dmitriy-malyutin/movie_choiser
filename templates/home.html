@@ -10,6 +10,12 @@
 <body>
     <div class="container">
         <h1>Время выбрать фильм</h1>
+        <!-- Блок для вывода сообщения -->
+        {% if message %}
+        <div class="alert {{ message_type }}">
+            {{ message }}
+            </div>
+        {% endif %}
         <button id="goButton">Поехали</button>
         <div id="result"></div>
         <a id="addLink" href="{{ url_for('submit') }}">Добавить запись</a>

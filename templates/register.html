@@ -9,6 +9,15 @@
 <body>
     <div class="container">
         <h1>Регистрация</h1>
+
+                <!-- Блок для отображения сообщения -->
+            {% if message %}
+            <div class="alert {{ message_type }}">
+                {{ message }}
+            </div>
+            {% endif %}
+    
+
         <div class="form-container">
             <form method="POST" action="{{ url_for('register') }}">
                 <div class="input-group">
