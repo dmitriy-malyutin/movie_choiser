@@ -15,7 +15,8 @@ document.getElementById('goButton').addEventListener('click', async function() {
         if (response.ok) {
             goButton.style.display = 'none';
             resultDiv.innerHTML = `
-                <div>Победитель ${result.name}, фильм ${result.word}</div>
+                <div>Победитель ${result.name}</div> 
+                <div>Фильм ${result.word}</div>
                 <div>
                     <button id="deleteButton">Удалить фильм</button>
                     <button id="replayButton">Переиграть</button>

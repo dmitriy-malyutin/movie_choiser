@@ -18,7 +18,7 @@ def ensure_data_file_exists():
 # Главная страница
 @app.route('/')
 def home():
-    return render_template('home.html')
+    return render_template('index.html')
 
 # Страница добавления записи и просмотр базы
 @app.route('/submit', methods=['GET', 'POST'])

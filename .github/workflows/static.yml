@@ -40,7 +40,7 @@ jobs:
       - name: Create static files
         run: |
           mkdir -p build/static/pics
-          cp templates/home.html build/index.html  # Копируем home.html как index.html
+          cp templates/index.html build/index.html
           cp -r static/* build/static/
 
       # Настройка GitHub Pages
