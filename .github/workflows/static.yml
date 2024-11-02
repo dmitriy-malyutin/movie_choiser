@@ -36,23 +36,24 @@ jobs:
           python -m pip install --upgrade pip
           pip install Flask  # Устанавливаем Flask
 
-      # Запуск приложения для создания статических файлов
+      # Создание статических файлов
       - name: Create static files
         run: |
-          mkdir -p build/templates
           mkdir -p build/static/pics
-          cp -r templates/* build/templates/
+          cp templates/home.html build/index.html  # Копируем home.html как index.html
           cp -r static/* build/static/
-      
-      # Загрузка артефактов
+
+      # Настройка GitHub Pages
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      # Загрузка артефактов
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: build  # Теперь путь указывает на директорию build
-          
+          path: build  # Загружаем папку build
+
+      # Деплой на GitHub Pages
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
