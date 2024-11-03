@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from werkzeug.security import generate_password_hash, check_password_hash
 from flask_caching import Cache
 import psycopg2
 import json
@@ -45,24 +46,35 @@ def auth():
         password = request.form['password']
         
         cur = conn.cursor()
-        cur.execute("SELECT * FROM app.users WHERE name = %s AND password = %s AND is_active = True", (username, password))
+        cur.execute("SELECT * FROM app.users WHERE name = %s AND is_active = True", (username,))
         user = cur.fetchone()
         
         if user:
-            if user[3]:  # Предполагается, что is_valid находится на 4-й позиции
-                session['user_id'] = user[0]
-                session.permanent = True
-                message = 'Успешный вход'
-                message_type = 'success'
-                return redirect(url_for('home'))
+            stored_hash = user[2]  # Предполагается, что хеш пароля находится на 3-й позиции
+            is_valid = user[3]     # Предполагается, что поле `is_valid` находится на 4-й позиции
+
+            # Проверка хеша пароля
+            if check_password_hash(stored_hash, password):
+                if is_valid:
+                    session['user_id'] = user[0]
+                    session.permanent = True
+                    message = 'Успешный вход'
+                    message_type = 'success'
+                    return redirect(url_for('home'))
+                else:
+                    message = 'Пользователь не подтвержден'
+                    message_type = 'warning'
             else:
-                message = 'Пользователь не подтвержден'
-                message_type = 'warning'
+                message = 'Неверные имя пользователя или пароль'
+                message_type = 'danger'
         else:
             message = 'Неверные имя пользователя или пароль'
             message_type = 'danger'
         
+        cur.close()
+    
     return render_template('index.html', message=message, message_type=message_type)
+
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -77,33 +89,32 @@ def register():
         
         try:
             # Проверка на существование пользователя
-            cur = conn.cursor()
-            cur.execute("SELECT * FROM app.users WHERE name = %s", (username,))
-            existing_user = cur.fetchone()
+            with conn.cursor() as cur:
+                cur.execute("SELECT * FROM app.users WHERE name = %s", (username,))
+                existing_user = cur.fetchone()
 
-            if existing_user:
-                message = 'Пользователь с таким именем уже существует'
-                message_type = 'warning'
-            else:
-                # Хэшируем пароль перед добавлением
-                hashed_password = generate_password_hash(password)
-                
-                # Вставка нового пользователя
-                cur.execute("INSERT INTO app.users (name, password) VALUES (%s, %s)", (username, hashed_password))
-                conn.commit()
-                message = 'Регистрация успешна!'
-                message_type = 'success'
-                return redirect(url_for('index'))  # Переход на страницу авторизации при успешной регистрации
+                if existing_user:
+                    message = 'Пользователь с таким именем уже существует'
+                    message_type = 'warning'
+                else:
+                    # Хэшируем пароль перед добавлением
+                    hashed_password = generate_password_hash(password)
+                    
+                    # Вставка нового пользователя
+                    cur.execute("INSERT INTO app.users (name, password) VALUES (%s, %s)", (username, hashed_password))
+                    conn.commit()
+                    message = 'Регистрация успешна!'
+                    message_type = 'success'
+                    return redirect(url_for('index'))  # Переход на страницу авторизации при успешной регистрации
 
         except Exception as e:
             conn.rollback()  # Откат в случае ошибки
-            message = f'Ошибка регистрации: {str(e)}'
+            print(f'Ошибка регистрации: {str(e)}')  # Логирование ошибки
+            message = 'Ошибка регистрации. Пожалуйста, попробуйте снова.'
             message_type = 'danger'
-        
-        finally:
-            cur.close()
-    
+
     return render_template('register.html', message=message, message_type=message_type)
+
 
 
 @cache.cached(timeout=300, key_prefix='movies_data')  # Кэшируем данные на 5 минут
