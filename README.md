@@ -29,7 +29,7 @@ Postgres любой версии
 И запустить
 
 ```bash
-python app.py
+./start.sh
 ```
 
 
