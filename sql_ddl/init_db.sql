@@ -12,6 +12,7 @@ CREATE TABLE app.users (
 	surname varchar,
 	phone varchar,
 	email varchar,
+    birth_date date,
 	"password" varchar NOT NULL,
 	is_active bool DEFAULT false NOT NULL,
     created_at timestamp NOT NULL DEFAULT now(),
