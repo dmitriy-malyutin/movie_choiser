@@ -8,14 +8,14 @@
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='pics/7423721-648226759.png') }}">
 </head>
 <body>
+    <!-- Контейнер для формы добавления записи -->
     <div class="container">
         <h1>Добавить запись</h1>
-            <!-- Блок для вывода сообщения -->
-            {% if message %}
-            <div class="alert {{ message_type }}">
-                {{ message }}
-            </div>
-            {% endif %}
+        {% if message %}
+        <div class="alert {{ message_type }}">
+            {{ message }}
+        </div>
+        {% endif %}
         <form method="POST" class="form-container">
             <div class="input-group">
                 <label for="name">Имя:</label>
@@ -27,10 +27,17 @@
             </div>
             <button type="submit">Добавить</button>
         </form>
+        <!-- Блок для вывода сообщения -->
         {% if message %}
-        <p>{{ message }}</p>
+        <div class="alert {{ message_type }}">
+            {{ message }}
+            </div>
         {% endif %}
-        <h2>Существующие записи</h2>
+    </div>
+
+    <!-- Контейнер для таблицы с фильмами -->
+    <div class="table-container">
+        <h2>Все непросмотренные фильмы</h2>
         <table>
             <thead>
                 <tr>
@@ -51,8 +58,9 @@
                 {% endfor %}
             </tbody>
         </table>
-        <a href="{{ url_for('home') }}">Назад на главную</a>
     </div>
+    <a href="{{ url_for('home') }}">Назад на главную</a>
+    
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

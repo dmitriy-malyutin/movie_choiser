@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div>Победитель: ${result.name}</div> 
                         <div>Фильм: ${result.word}</div>
                         <div>
-                            <button id="deleteButton">Удалить фильм</button>
+                            <button id="deleteButton">Просмотрено, удалить</button>
                             <button id="replayButton">Переиграть</button>
                         </div>
                     `;

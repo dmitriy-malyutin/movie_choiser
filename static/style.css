@@ -1,179 +1,144 @@
+/* Основной контейнер страницы */
 body {
-    background-color: #181818;
     color: #f5f5f5;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+    flex-direction: column;
+    align-items: center; /* Центрирование контейнеров по горизонтали */
+    justify-content: center; /* Центрирование контейнеров по вертикали */
+    min-height: 100vh; /* Фон занимает всю высоту экрана */
     text-align: center;
     background: linear-gradient(to bottom, rgba(24, 24, 24, 0) -400%, #181818), 
                 url('./pics/staraia-plenka-19.png') no-repeat top center;
     background-size: cover;
 }
 
+/* Контейнер для блока добавления записи */
 .container {
-    width: 50%;
-    text-align: center;
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    text-align: center; /* Центрирование текста внутри контейнера */
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: center; /* Центрирование элементов внутри контейнера */
 }
 
-.form-container {
+/* Контейнер для таблицы */
+.table-container {
+    width: 75vw;
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    border-radius: 8px;
+    box-sizing: border-box;
+    overflow-x: auto;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: center; /* Центрирование таблицы внутри контейнера */
 }
 
+/* Стили для таблицы */
+table {
+    width: 100%;
+    max-width: 100%;
+    border-collapse: collapse;
+}
+
+/* Универсальный стиль для всех полей ввода */
+input {
+    width: 70%; /* Занимают оставшееся пространство */
+    padding: 10px;
+    font-size: 14px;
+    border: none; /* Убираем все границы */
+    border-bottom: 1px solid #f5f5f5; /* Тонкая белая линия внизу */
+    color: #f5f5f5;
+    background-color: transparent; /* Прозрачный фон */
+}
+
+/* Выровненные группы ввода */
 .input-group {
     display: flex;
     align-items: center;
+    width: 100%;
     margin: 10px 0;
 }
 
+/* Метка к каждому полю */
 label {
-    margin-right: 10px;
-}
-
-button, a {
-    background: none;
-    border: none;
+    font-size: 16px;
     color: #f5f5f5;
-    font-size: 20px;
-    cursor: pointer;
-    text-decoration: none;
-    margin: 10px;
-    display: inline-block;
+    margin-right: 10px;
+    flex: 0 0 30%;
 }
-
-button:hover, a:hover {
-    text-decoration: underline;
-}
-
-button:focus, a:focus {
-    outline: none;
-}
-
-input {
+/* Поля ввода */
+input[type="text"] {
+    flex: 1;
+    padding: 8px;
+    font-size: 14px;
     border: none;
-    border-bottom: 1px solid #f5f5f5; /* Тонкая линия */
+    border-bottom: 1px solid #f5f5f5;
     color: #f5f5f5;
     background-color: transparent;
-    padding: 5px;
-    box-sizing: border-box;
-    width: 100%; /* Заполняет оставшееся пространство */
+}
+input[type="text"]:focus {
+    outline: none;
+    border-bottom: 1px solid #c99700;
 }
 
 input:focus {
+    outline: none; /* Убираем стандартное выделение */
+    border-bottom: 1px solid #c99700; /* Подсвечиваем нижнюю линию при фокусе */
+}
+
+/* Универсальный стиль для всех кнопок */
+button {
+    background: none; /* Убираем фон */
+    border: none; /* Убираем границы */
+    color: #f5f5f5; /* Белый цвет текста */
+    font-size: 16px;
+    cursor: pointer;
+    transition: color 0.3s; /* Плавный переход цвета */
+}
+
+button:hover {
+    color: #c99700; /* Золотистый цвет текста при наведении */
+}
+
+button:focus {
     outline: none; /* Убираем обводку при фокусе */
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
+/* Универсальный стиль для всех ссылок */
+a {
+    color: #c99700; /* Основной цвет ссылок */
+    text-decoration: none;
 }
 
+a:hover {
+    text-decoration: underline; /* Подчеркивание при наведении */
+}
+
+a:visited {
+    color: #c99700; /* Совпадает с обычным цветом ссылки */
+}
+
+
+
 th, td {
+    padding: 12px;
     border-bottom: 1px solid #f5f5f5;
-    padding: 10px;
+    color: #f5f5f5;
+    text-align: center; /* Центрирование текста внутри ячеек таблицы */
 }
 
 th {
     background-color: #282828;
-    text-align: left;
 }
 
 td {
-    background-color: #202020;
-    text-align: left;
+    background-color: #303030;
 }
-
-td:first-child, th:first-child {
-    text-align: center;
-}
-
-td:nth-child(2), th:nth-child(2) {
-    text-align: left;
-}
-
-td:nth-child(3), th:nth-child(3) {
-    text-align: right;
-}
-
-td:last-child, th:last-child {
-    text-align: center;
-}
-
-.delete-btn {
-    background: none;
-    border: none;
-    color: red;
-    font-size: 14px;
-    cursor: pointer;
-    padding: 0;
-}
-
-.delete-btn:hover {
-    text-decoration: none;
-    color: darkred;
-}
-
-#result div {
-    font-size: 22px; /* Увеличивает шрифт на два пункта */
-}
-
-button, a {
-    font-size: 19px; /* Уменьшает шрифт на один пункт */
-}
-
-/* Основные стили для блока сообщения */
-.alert {
-    padding: 15px;
-    margin-bottom: 20px;
-    border-radius: 5px;
-    font-size: 16px;
-    text-align: center;
-}
-
-/* Успешное сообщение */
-.alert.success {
-    color: #155724;
-}
-
-/* Предупреждение */
-.alert.warning {
-    color: #c99700;
-}
-
-/* Сообщение об ошибке */
-.alert.danger {
-    color: #91000f;
-}
-
-.input-group {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    max-width: 350px;
-    margin: 10px auto;
-}
-
-label {
-    width: 25%; /* Лейблы занимают 30% ширины группы */
-    text-align: right;
-}
-
-input[type="text"],
-input[type="password"] {
-    width: 75%; /* Поля занимают оставшееся пространство */
-    padding: 8px;
-    border: none;
-    border-bottom: 1px solid #f5f5f5;
-    color: #f5f5f5;
-    background-color: transparent;
-}
-
