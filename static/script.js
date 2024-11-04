@@ -1,8 +1,36 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Сообщение о загрузке страницы и инициализации кода
     console.log("Страница загружена, скрипт инициализирован.");
 
-    // Инициализация кнопки выбора случайной записи
+    // Настройка плеера и кнопки для следующего видео
+    const videoPlayer = document.getElementById('videoPlayer');
+    const nextButton = document.getElementById('nextButton');
+
+    videoPlayer.addEventListener('ended', function() {
+        fetch('/get_next_video')
+            .then(response => response.json())
+            .then(data => {
+                if (data.video_path) {
+                    videoPlayer.src = data.video_path;
+                    videoPlayer.play();
+                } else {
+                    nextButton.style.display = 'block';
+                }
+            });
+    });
+
+    nextButton.addEventListener('click', function() {
+        fetch('/get_next_video')
+            .then(response => response.json())
+            .then(data => {
+                if (data.video_path) {
+                    videoPlayer.src = data.video_path;
+                    videoPlayer.play();
+                    nextButton.style.display = 'none';
+                }
+            });
+    });
+
+    // Инициализация кнопки для случайного выбора записи
     const goButton = document.getElementById('goButton');
     if (goButton) {
         goButton.addEventListener('click', async function() {
@@ -67,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Лог для кнопок удаления записи на странице submit.html
+    // Лог для кнопок удаления записи
     const deleteButtons = document.querySelectorAll('.delete-btn');
     console.log(`Обнаружено ${deleteButtons.length} кнопок удаления.`);
 
@@ -87,7 +115,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
 
                 if (response.ok) {
-                    // Удаляем строку из таблицы на клиенте
                     this.closest('tr').remove();
                     console.log('Запись успешно удалена.');
                     alert('Запись удалена.');
@@ -105,20 +132,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Функция для автоформатирования номера телефона
     function formatPhoneNumber(input) {
-        // Удаляем все символы, кроме цифр
         let number = input.value.replace(/\D/g, '');
 
-        // Добавляем формат +7
         if (number.length > 1) {
             number = '+7' + number.substring(1);
         }
 
-        // Ограничиваем количество цифр до 11
         if (number.length > 12) {
             number = number.substring(0, 12);
         }
 
-        // Обновляем значение поля ввода
         input.value = number;
     }
 

@@ -10,43 +10,20 @@
 <body>
     <div class="container">
         <h1>Смотреть серию</h1>
+        
+        <!-- Видеоплеер -->
         <video id="videoPlayer" width="640" height="360" controls autoplay>
             <source src="{{ video_path }}" type="video/mp4">
             Ваш браузер не поддерживает тег видео.
         </video>
+
+        <!-- Кнопка следующей серии -->
         <button id="nextButton" style="display: none;">Следующая серия</button>
+
+        <!-- Кнопка на главную -->
+        <a href="{{ url_for('room') }}">Назад на главную</a>
     </div>
+    
     <script src="{{ url_for('static', filename='script.js') }}"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const videoPlayer = document.getElementById('videoPlayer');
-            const nextButton = document.getElementById('nextButton');
-
-            videoPlayer.addEventListener('ended', function() {
-                fetch('/get_next_video')
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.video_path) {
-                            videoPlayer.src = data.video_path;
-                            videoPlayer.play();
-                        } else {
-                            nextButton.style.display = 'block';
-                        }
-                    });
-            });
-
-            nextButton.addEventListener('click', function() {
-                fetch('/get_next_video')
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.video_path) {
-                            videoPlayer.src = data.video_path;
-                            videoPlayer.play();
-                            nextButton.style.display = 'none';
-                        }
-                    });
-            });
-        });
-    </script>
 </body>
 </html>
