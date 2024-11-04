@@ -10,23 +10,45 @@
     <div class="container">
         <h1>Регистрация</h1>
 
-                <!-- Блок для отображения сообщения -->
-            {% if message %}
-            <div class="alert {{ message_type }}">
-                {{ message }}
-            </div>
-            {% endif %}
-    
+        {% if message %}
+        <div class="alert {{ message_type }}">
+            {{ message }}
+        </div>
+        {% endif %}
 
         <div class="form-container">
             <form method="POST" action="{{ url_for('register') }}">
                 <div class="input-group">
                     <label for="username">Логин:</label>
-                    <input type="text" name="username" required>
+                    <input type="text" name="username" value="{{ form_data.username }}" required>
                 </div>
                 <div class="input-group">
                     <label for="password">Пароль:</label>
                     <input type="password" name="password" required>
+                </div>
+                <div class="input-group">
+                    <label for="confirm_password">Подтвердите пароль:</label>
+                    <input type="password" name="confirm_password" required>
+                </div>
+                <div class="input-group">
+                    <label for="first_name">Имя:</label>
+                    <input type="text" name="first_name" value="{{ form_data.first_name }}"  required>
+                </div>
+                <div class="input-group">
+                    <label for="surname">Фамилия:</label>
+                    <input type="text" name="surname" value="{{ form_data.surname }}">
+                </div>
+                <div class="input-group">
+                    <label for="email">Email:</label>
+                    <input type="email" name="email" value="{{ form_data.email }}"  required>
+                </div>
+                <div class="input-group">
+                    <label for="phone">Телефон:</label>
+                    <input type="text" name="phone" value="{{ form_data.phone }}">
+                </div>
+                <div class="input-group">
+                    <label for="birth_date">Дата рождения:</label>
+                    <input type="date" name="birth_date" value="{{ form_data.birth_date }}"  required>
                 </div>
                 <button type="submit">Зарегистрироваться</button>
             </form>

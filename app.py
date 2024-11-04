@@ -45,12 +45,12 @@ def auth():
         password = request.form['password']
         
         cur = conn.cursor()
-        cur.execute('SELECT "login", "password", "is_active" FROM app.users WHERE name = %s AND is_active = True', (username,))
+        cur.execute('SELECT "login", "password", "is_active" FROM app.users WHERE login = %s AND is_active = True', (username,))
         user = cur.fetchone()
         
         if user:
-            stored_hash = user[2]  # Предполагается, что хеш пароля находится на 3-й позиции
-            is_active = user[3]     # Предполагается, что поле `is_active` находится на 4-й позиции
+            stored_hash = user[1]  # Предполагается, что хеш пароля находится на 2-й позиции
+            is_active = user[2]     # Предполагается, что поле `is_active` находится на 3-й позиции
 
             # Проверка хеша пароля
             if check_password_hash(stored_hash, password):
@@ -82,39 +82,64 @@ def register():
     message = None  # Сообщение об ошибке или успехе
     message_type = None  # Тип сообщения ('success' или 'warning')
 
+    # Сохраняем введённые данные для отображения их при ошибке
+    form_data = {
+        "username": "",
+        "first_name": "",
+        "surname": "",
+        "email": "",
+        "phone": "",
+        "birth_date": ""
+    }
+
     if request.method == 'POST':
-        username = request.form['username']
+        # Заполняем form_data из формы
+        form_data['username'] = request.form['username']
+        form_data['first_name'] = request.form.get('first_name', "")
+        form_data['surname'] = request.form.get('surname', "")
+        form_data['email'] = request.form.get('email', "")
+        form_data['phone'] = request.form.get('phone', "")
+        form_data['birth_date'] = request.form.get('birth_date', "")
+
         password = request.form['password']
+        confirm_password = request.form['confirm_password']
         
-        try:
-            # Проверка на существование пользователя
-            with conn.cursor() as cur:
-                cur.execute("SELECT * FROM app.users WHERE login = %s", (username,))
-                existing_user = cur.fetchone()
+        if password != confirm_password:
+            message = 'Пароли не совпадают. Пожалуйста, попробуйте снова.'
+            message_type = 'warning'
+        else:
+            try:
+                # Проверка на существование пользователя
+                with conn.cursor() as cur:
+                    cur.execute("SELECT * FROM app.users WHERE login = %s", (form_data['username'],))
+                    existing_user = cur.fetchone()
 
-                if existing_user:
-                    message = 'Пользователь с таким именем уже существует'
-                    message_type = 'warning'
-                else:
-                    # Хэшируем пароль перед добавлением
-                    hashed_password = generate_password_hash(password)
-                    
-                    # Вставка нового пользователя
-                    cur.execute("INSERT INTO app.users (login, password) VALUES (%s, %s)", (username, hashed_password))
-                    conn.commit()
-                    message = 'Регистрация успешна!'
-                    message_type = 'success'
-                    return redirect(url_for('index'))  # Переход на страницу авторизации при успешной регистрации
+                    if existing_user:
+                        message = 'Пользователь с таким именем уже существует'
+                        message_type = 'warning'
+                    else:
+                        # Хэшируем пароль перед добавлением
+                        hashed_password = generate_password_hash(password)
+                        
+                        # Вставка нового пользователя
+                        cur.execute(
+                            "INSERT INTO app.users (login, password, name, surname, email, phone, birth_date) "
+                            "VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                            (form_data['username'], hashed_password, form_data['first_name'],
+                             form_data['surname'], form_data['email'], form_data['phone'], form_data['birth_date'])
+                        )
+                        conn.commit()
+                        message = 'Регистрация успешна!'
+                        message_type = 'success'
+                        return redirect(url_for('index'))
 
-        except Exception as e:
-            conn.rollback()  # Откат в случае ошибки
-            print(f'Ошибка регистрации: {str(e)}')  # Логирование ошибки
-            message = 'Ошибка регистрации. Пожалуйста, попробуйте снова.'
-            message_type = 'danger'
+            except Exception as e:
+                conn.rollback()
+                print(f'Ошибка регистрации: {str(e)}')
+                message = 'Ошибка регистрации. Пожалуйста, попробуйте снова.'
+                message_type = 'danger'
 
-    return render_template('register.html', message=message, message_type=message_type)
-
-
+    return render_template('register.html', message=message, message_type=message_type, form_data=form_data)
 
 @cache.cached(timeout=300, key_prefix='movies_data')  # Кэшируем данные на 5 минут
 def get_movies():
