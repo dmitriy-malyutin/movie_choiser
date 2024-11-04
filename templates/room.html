@@ -16,7 +16,9 @@
             {{ message }}
             </div>
         {% endif %}
-        <button id="goButton">Поехали</button>
+        <a href="{{ url_for('watch') }}"><button>Я не знаю, что мне посмотреть</button></a>
+
+        <button id="goButton">Выберу из списка</button>
         <div id="result"></div>
         <a id="addLink" href="{{ url_for('submit') }}">Посмотреть всю базу</a>
         <form method="POST" action="{{ url_for('logout') }}">

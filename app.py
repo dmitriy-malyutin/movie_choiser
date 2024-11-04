@@ -4,7 +4,15 @@ from flask_caching import Cache
 import psycopg2
 import json
 from datetime import timedelta
-
+import os
+import os
+import random
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_caching import Cache
+import psycopg2
+import json
+from datetime import timedelta
 
 app = Flask(__name__)
 app.config['CACHE_TYPE'] = 'simple'  # Используем простое кэширование в памяти
@@ -16,6 +24,7 @@ with open('connections.json') as f:
     connections = json.load(f)
     db_config = connections['moovie_chooser']['postgres']
     secret = connections['secret_key']
+    VIDEO_DIR = connections['video_dir']
 
 app.secret_key = secret
 app.permanent_session_lifetime = timedelta(minutes=30)  # Установка таймаута на 30 минут
@@ -39,42 +48,45 @@ def auth():
     message = None
     message_type = None
 
-
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         
-        cur = conn.cursor()
-        cur.execute('SELECT "login", "password", "is_active" FROM app.users WHERE login = %s AND is_active = True', (username,))
-        user = cur.fetchone()
-        
-        if user:
-            stored_hash = user[1]  # Предполагается, что хеш пароля находится на 2-й позиции
-            is_active = user[2]     # Предполагается, что поле `is_active` находится на 3-й позиции
+        try:
+            cur = conn.cursor()
+            cur.execute('SELECT "login", "password", "is_active" FROM app.users WHERE login = %s AND is_active = True', (username,))
+            user = cur.fetchone()
+            
+            if user:
+                stored_hash = user[1]  # Предполагается, что хеш пароля находится на 2-й позиции
+                is_active = user[2]     # Предполагается, что поле `is_active` находится на 3-й позиции
 
-            # Проверка хеша пароля
-            if check_password_hash(stored_hash, password):
-                if is_active:
-                    session['user_id'] = user[0]
-                    session.permanent = True
-                    message = 'Успешный вход'
-                    message_type = 'success'
-                    return redirect(url_for('home'))
+                # Проверка хеша пароля
+                if check_password_hash(stored_hash, password):
+                    if is_active:
+                        session['user_id'] = user[0]
+                        session.permanent = True
+                        message = 'Успешный вход'
+                        message_type = 'success'
+                        return redirect(url_for('room'))
+                    else:
+                        message = 'Пользователь не подтвержден'
+                        message_type = 'warning'
                 else:
-                    message = 'Пользователь не подтвержден'
-                    message_type = 'warning'
+                    message = 'Неверные имя пользователя или пароль'
+                    message_type = 'danger'
             else:
                 message = 'Неверные имя пользователя или пароль'
                 message_type = 'danger'
-        else:
-            message = 'Неверные имя пользователя или пароль'
-            message_type = 'danger'
         
-        cur.close()
+        except Exception as e:
+            print(f"Ошибка при аутентификации: {e}")
+            message = 'Ошибка при аутентификации'
+            message_type = 'danger'
+        finally:
+            cur.close()
     
     return render_template('index.html', message=message, message_type=message_type)
-
-
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -144,19 +156,23 @@ def register():
 @cache.cached(timeout=300, key_prefix='movies_data')  # Кэшируем данные на 5 минут
 def get_movies():
     """Получение данных о фильмах из таблицы app.movies."""
-    cur = conn.cursor()
-    cur.execute("SELECT offer, movie FROM app.movies")
-    movies = cur.fetchall()
-    cur.close()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT offer, movie FROM app.movies")
+        movies = cur.fetchall()
+    except Exception as e:
+        print(f"Ошибка при получении данных о фильмах: {e}")
+        movies = []
+    finally:
+        cur.close()
     return movies
 
-@app.route('/home')
-def home():
+@app.route('/room')
+def room():
     """Главная страница после авторизации."""
     if 'user_id' in session:
-        return render_template('home.html')
+        return render_template('room.html')
     return render_template('index.html', message='Пожалуйста, войдите в систему', message_type='warning')
-
 
 @app.route('/submit', methods=['GET', 'POST'])
 def submit():
@@ -182,19 +198,22 @@ def submit():
                 conn.rollback()
                 message = 'Такая запись уже существует'
                 message_type = 'warning'
+            except Exception as e:
+                conn.rollback()
+                print(f"Ошибка при добавлении записи: {e}")
+                message = 'Ошибка при добавлении записи'
+                message_type = 'danger'
             finally:
                 cur.close()
     
     movies = get_movies()
     return render_template('submit.html', rows=movies, message=message, message_type=message_type)
 
-
 @app.route('/logout', methods=['POST'])
 def logout():
     """Выход из системы."""
     session.pop('user_id', None)
     return render_template('index.html', message='Вы вышли из системы', message_type='info')
-
 
 @app.route('/get_random', methods=['POST'])
 def get_random_entry():
@@ -203,16 +222,16 @@ def get_random_entry():
         cur = conn.cursor()
         cur.execute("SELECT offer, movie FROM app.movies ORDER BY RANDOM() LIMIT 1")
         chosen_entry = cur.fetchone()
-        cur.close()
-
-        if chosen_entry:
-            return jsonify({'name': chosen_entry[0], 'word': chosen_entry[1]})
-        else:
-            return jsonify({'error': 'Нет данных'}), 404
-
     except Exception as e:
         print(f"Ошибка при получении случайной записи: {e}")
         return jsonify({'error': 'Ошибка сервера'}), 500
+    finally:
+        cur.close()
+
+    if chosen_entry:
+        return jsonify({'name': chosen_entry[0], 'word': chosen_entry[1]})
+    else:
+        return jsonify({'error': 'Нет данных'}), 404
 
 @app.route('/delete_entry', methods=['POST'])
 def delete_entry():
@@ -227,7 +246,6 @@ def delete_entry():
                 cur = conn.cursor()
                 cur.execute("DELETE FROM app.movies WHERE offer = %s AND movie = %s", (name, word))
                 conn.commit()
-                cur.close()
                 cache.delete('movies_data')  # Удаляем кэш при удалении записи
                 if cur.rowcount > 0:
                     return jsonify({'success': True})
@@ -235,9 +253,39 @@ def delete_entry():
                     return jsonify({'success': False, 'message': 'Запись не найдена'}), 404
 
             except Exception as e:
+                conn.rollback()
                 print(f"Ошибка при удалении записи: {e}")
                 return jsonify({'success': False, 'message': str(e)}), 400
+            finally:
+                cur.close()
     return jsonify({'success': False, 'message': 'Не удалось получить данные для удаления'}), 400
+
+def get_random_video():
+    """Получение случайного видео из указанной директории."""
+    video_files = []
+    for root, dirs, files in os.walk(VIDEO_DIR):
+        for file in files:
+            if file.endswith(('.mp4', '.mkv', '.avi')):
+                video_files.append(os.path.join(root, file))
+    return random.choice(video_files) if video_files else None
+
+@app.route('/watch')
+def watch():
+    """Страница с видео-плеером."""
+    video_path = get_random_video()
+    if video_path:
+        return render_template('watch.html', video_path=video_path)
+    else:
+        return "Нет доступных видео для просмотра.", 404
+
+@app.route('/get_next_video')
+def get_next_video():
+    """Получение следующего видео."""
+    video_path = get_random_video()
+    if video_path:
+        return jsonify({'video_path': video_path})
+    else:
+        return jsonify({'video_path': None})
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
