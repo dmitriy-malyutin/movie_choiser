@@ -99,7 +99,7 @@ button {
     background: none; /* Убираем фон */
     border: none; /* Убираем границы */
     color: #f5f5f5; /* Белый цвет текста */
-    font-size: 16px;
+    font-size: 22px;
     cursor: pointer;
     transition: color 0.3s; /* Плавный переход цвета */
 }

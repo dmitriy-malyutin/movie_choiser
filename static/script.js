@@ -20,8 +20,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (response.ok) {
                     goButton.style.display = 'none';
                     resultDiv.innerHTML = `
-                        <div>Победитель: ${result.name}</div> 
-                        <div>Фильм: ${result.word}</div>
+                        <div style="font-size: 24px;">Победитель: ${result.name}</div> 
+                        <div style="font-size: 24px;">Фильм: ${result.word}</div>
                         <div>
                             <button id="deleteButton">Просмотрено, удалить</button>
                             <button id="replayButton">Переиграть</button>
@@ -102,4 +102,31 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Функция для автоформатирования номера телефона
+    function formatPhoneNumber(input) {
+        // Удаляем все символы, кроме цифр
+        let number = input.value.replace(/\D/g, '');
+
+        // Добавляем формат +7
+        if (number.length > 1) {
+            number = '+7' + number.substring(1);
+        }
+
+        // Ограничиваем количество цифр до 11
+        if (number.length > 12) {
+            number = number.substring(0, 12);
+        }
+
+        // Обновляем значение поля ввода
+        input.value = number;
+    }
+
+    // Добавляем обработчик события input для поля телефона
+    const phoneInput = document.querySelector('input[name="phone"]');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function() {
+            formatPhoneNumber(this);
+        });
+    }
 });
