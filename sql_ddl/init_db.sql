@@ -37,3 +37,18 @@ CREATE TABLE app.rooms (
 );
 ALTER TABLE app.rooms ADD CONSTRAINT rooms_created_by_fkey FOREIGN KEY (created_by) REFERENCES app.users(id);
 ALTER TABLE app.rooms ADD CONSTRAINT rooms_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES app.users(id);
+
+-- movies
+
+-- movie_rooms
+CREATE TABLE app.movie_rooms (
+	id serial4 NOT NULL,
+	added_by int4 NOT NULL,
+	room_id int4 NOT NULL,
+	movie_id int4 NOT NULL,
+	created_at timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT movie_rooms_pkey PRIMARY KEY (id)
+);
+ALTER TABLE app.movie_rooms ADD CONSTRAINT movie_rooms_added_by_fkey FOREIGN KEY (added_by) REFERENCES app.users(id);
+ALTER TABLE app.movie_rooms ADD CONSTRAINT movie_rooms_movie_id_fkey FOREIGN KEY (movie_id) REFERENCES app.movies(id);
+ALTER TABLE app.movie_rooms ADD CONSTRAINT movie_rooms_room_id_fkey FOREIGN KEY (room_id) REFERENCES app.rooms(id);
