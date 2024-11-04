@@ -3,10 +3,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_caching import Cache
 import psycopg2
 import json
-import random
-import csv
 from datetime import timedelta
-import os
+
 
 app = Flask(__name__)
 app.config['CACHE_TYPE'] = 'simple'  # Используем простое кэширование в памяти
@@ -41,21 +39,22 @@ def auth():
     message = None
     message_type = None
 
+
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         
         cur = conn.cursor()
-        cur.execute("SELECT * FROM app.users WHERE name = %s AND is_active = True", (username,))
+        cur.execute('SELECT "login", "password", "is_active" FROM app.users WHERE name = %s AND is_active = True', (username,))
         user = cur.fetchone()
         
         if user:
             stored_hash = user[2]  # Предполагается, что хеш пароля находится на 3-й позиции
-            is_valid = user[3]     # Предполагается, что поле `is_valid` находится на 4-й позиции
+            is_active = user[3]     # Предполагается, что поле `is_active` находится на 4-й позиции
 
             # Проверка хеша пароля
             if check_password_hash(stored_hash, password):
-                if is_valid:
+                if is_active:
                     session['user_id'] = user[0]
                     session.permanent = True
                     message = 'Успешный вход'
@@ -90,7 +89,7 @@ def register():
         try:
             # Проверка на существование пользователя
             with conn.cursor() as cur:
-                cur.execute("SELECT * FROM app.users WHERE name = %s", (username,))
+                cur.execute("SELECT * FROM app.users WHERE login = %s", (username,))
                 existing_user = cur.fetchone()
 
                 if existing_user:
@@ -101,7 +100,7 @@ def register():
                     hashed_password = generate_password_hash(password)
                     
                     # Вставка нового пользователя
-                    cur.execute("INSERT INTO app.users (name, password) VALUES (%s, %s)", (username, hashed_password))
+                    cur.execute("INSERT INTO app.users (login, password) VALUES (%s, %s)", (username, hashed_password))
                     conn.commit()
                     message = 'Регистрация успешна!'
                     message_type = 'success'
