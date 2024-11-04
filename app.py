@@ -269,12 +269,12 @@ def get_random_video():
                 video_files.append(os.path.join(root, file))
     return random.choice(video_files) if video_files else None
 
-@app.route('/watch')
-def watch():
+@app.route('/watch_random')
+def watch_random():
     """Страница с видео-плеером."""
     video_path = get_random_video()
     if video_path:
-        return render_template('watch.html', video_path=video_path)
+        return render_template('watch_random.html', video_path=video_path)
     else:
         return "Нет доступных видео для просмотра.", 404
 
