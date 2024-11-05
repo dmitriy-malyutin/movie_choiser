@@ -14,6 +14,19 @@ body {
     background-size: cover;
 }
 
+/* Контейнер для таблицы с прокруткой */
+.table-container-big {
+    max-height: 720px;
+    overflow-y: auto;
+    max-width: 100%; /* Увеличение ширины контейнера до 95% */
+    margin: 0 auto;
+}
+
+/* Оформление для навигации */
+.pagination a {
+    margin: 0 15px;  /* Увеличение отступов между кнопками навигации */
+}
+
 /* Контейнер для блока добавления записи */
 .container {
     width: 100%;
@@ -122,8 +135,25 @@ a {
     margin: 10px 0; /* Отступ между ссылками */
 }
 
+a.button {
+    background: none;
+    border: none;
+    color: #f5f5f5 !important;
+    font-size: 22px;
+    cursor: pointer;
+    transition: color 0.3s;
+    margin: 10px 0;
+}
+
+a.button:hover {
+    color: #c99700 !important; /* Желтый цвет при наведении */
+    text-decoration: none;
+}
+
+
 a:hover {
     text-decoration: underline;
+    color: #c99700;
 }
 
 a:visited {
@@ -132,3 +162,4 @@ a:visited {
 
 th, td {
     padding: 12px;
+}

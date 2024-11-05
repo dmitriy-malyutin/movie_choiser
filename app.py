@@ -3,7 +3,7 @@ import os
 import random
 import re
 from datetime import timedelta
-
+from pymongo import MongoClient
 import psycopg2
 from flask import (Flask, jsonify, redirect, render_template, request, session,
                    url_for)
@@ -18,9 +18,14 @@ cache = Cache(app)
 # Подключение к базе данных
 with open("connections.json") as f:
     connections = json.load(f)
-    db_config = connections["moovie_chooser"]["postgres"]
+    db_config = connections["dbs"]["postgres"]
+    mongo_uri = connections["dbs"]["mongo_uri"]
     secret = connections["secret_key"]
     VIDEO_DIR = connections["video_dir"]
+
+client = MongoClient(mongo_uri)
+db = client["movie_choiser"]  # Имя вашей базы данных
+movies_collection = db['movies'] 
 
 app.secret_key = secret
 app.permanent_session_lifetime = timedelta(minutes=30)  # Установка таймаута на 30 минут
@@ -32,6 +37,8 @@ conn = psycopg2.connect(
     user=db_config["user"],
     password=db_config["password"],
 )
+
+
 
 
 @app.route("/")
@@ -359,26 +366,38 @@ def get_next_episode(current_video_name, series_name_pattern=None):
 
 
 def get_random_video():
-    """Получение случайного видео из указанной директории."""
+    """Получение случайного видео, с учетом равной вероятности для каждого сериала."""
+
+    # Получаем список всех папок на уровень ниже внутри `VIDEO_DIR`
+    series_dirs = [os.path.join(VIDEO_DIR, d) for d in os.listdir(VIDEO_DIR) if os.path.isdir(os.path.join(VIDEO_DIR, d))]
+
+    # Если нет папок с сериалами, возвращаем None
+    if not series_dirs:
+        return None
+
+    selected_series_dir = random.choice(series_dirs)
+       # Собираем список всех видеофайлов в выбранной папке
     video_files = []
-    for root, dirs, files in os.walk(VIDEO_DIR):
+    for root, dirs, files in os.walk(selected_series_dir):
         for file in files:
-            if file.endswith((".mp4", ".mkv", ".avi")):
+            if file.endswith((".mp4")):
                 video_files.append(os.path.join(root, file))
+        # Если нет видеофайлов, возвращаем None
+    if not video_files:
+        return None
 
-    if video_files:
-        selected_video = random.choice(video_files)
-        relative_path = os.path.relpath(selected_video, VIDEO_DIR)
-        web_path = f"static/series/{relative_path}"
-        video_name = os.path.basename(selected_video).rsplit(".", 1)[0]
-        video_extension = os.path.basename(selected_video).split(".")[-1]
-        return {
-            "path": web_path,
-            "video_name": video_name,
-            "extension": video_extension,
-        }
+    # Выбираем случайный видеофайл
+    selected_video = random.choice(video_files)
+    relative_path = os.path.relpath(selected_video, VIDEO_DIR)
+    web_path = f"static/series/{relative_path}"
+    video_name = os.path.basename(selected_video).rsplit(".", 1)[0]
+    video_extension = os.path.basename(selected_video).split(".")[-1]
 
-    return None
+    return {
+        "path": web_path,
+        "video_name": video_name,
+        "extension": video_extension,
+    }
 
 
 @app.route("/watch_random")
@@ -426,6 +445,30 @@ def get_random():
         return jsonify(
             {"video_path": None, "video_name": None, "video_extension": None}
         )
+
+
+@app.route("/room", methods=["GET"])
+def room():
+    return render_template("room.html")
+
+# MONGO MOVIES
+@app.route('/movies')
+def all_movies():
+    page = int(request.args.get('page', 1))  # Текущая страница, по умолчанию 1
+    per_page = 20                            # Количество фильмов на странице
+    offset = (page - 1) * per_page            # Смещение для запроса
+
+    # Запрос на фильмы с ограничением по смещению и количеству
+    movies = list(movies_collection.find({}).skip(offset).limit(per_page))
+    total_movies = movies_collection.count_documents({})  # Общее количество фильмов
+    total_pages = (total_movies + per_page - 1) // per_page
+
+    return render_template(
+        'all_movies.html',
+        movies=movies,
+        page=page,
+        total_pages=total_pages
+    )
 
 
 if __name__ == "__main__":
