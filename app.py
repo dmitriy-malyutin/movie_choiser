@@ -328,7 +328,6 @@ def get_random_video():
 
     return None
 
-
 @app.route('/watch_random')
 def watch_random():
     """Страница с видео-плеером для случайной серии."""
