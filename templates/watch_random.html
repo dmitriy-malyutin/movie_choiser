@@ -5,25 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Смотреть серию</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Video.js -->
+    <script src="https://vjs.zencdn.net/7.11.4/video.min.js"></script>
+    <script src="{{ url_for('static', filename='js/watch_random.js') }}"></script>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='pics/7423721-648226759.png') }}">
+    <style>
+        #videoPlayer {
+            width: 100%;
+            height: auto;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <h1>Смотреть серию</h1>
-        
-        <!-- Видеоплеер -->
-        <video id="videoPlayer" width="640" height="360" controls autoplay>
-            <source src="{{ video_path }}" type="video/mp4">
-            Ваш браузер не поддерживает тег видео.
+        <h2 id="videoName">{{ video.video_name }}</h2>
+
+        <video id="videoPlayer" width="640" height="360" class="video-js vjs-default-skin" controls>
+            <source src="{{ video.path }}" type="video/mp4">
+            Ваш браузер не поддерживает воспроизведение видео.
         </video>
-
-        <!-- Кнопка следующей серии -->
-        <button id="nextButton" style="display: none;">Следующая серия</button>
-
-        <!-- Кнопка на главную -->
+        
+        <button id="nextButton">Следующая серия</button>
+        <a href="{{ url_for('watch_random') }}"><button id="otherButtom">Случайная серия</button></a>
+        
         <a href="{{ url_for('room') }}">Назад на главную</a>
     </div>
-    
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

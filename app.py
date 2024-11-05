@@ -5,14 +5,10 @@ import psycopg2
 import json
 from datetime import timedelta
 import os
-import os
+import re
 import random
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_caching import Cache
-import psycopg2
-import json
-from datetime import timedelta
+
+
 
 app = Flask(__name__)
 app.config['CACHE_TYPE'] = 'simple'  # Используем простое кэширование в памяти
@@ -215,7 +211,7 @@ def logout():
     session.pop('user_id', None)
     return render_template('index.html', message='Вы вышли из системы', message_type='info')
 
-@app.route('/get_random', methods=['POST'])
+@app.route('/get_random_entry', methods=['GET'])
 def get_random_entry():
     """Получение случайной записи из таблицы app.movies."""
     try:
@@ -232,6 +228,7 @@ def get_random_entry():
         return jsonify({'name': chosen_entry[0], 'word': chosen_entry[1]})
     else:
         return jsonify({'error': 'Нет данных'}), 404
+
 
 @app.route('/delete_entry', methods=['POST'])
 def delete_entry():
@@ -260,6 +257,59 @@ def delete_entry():
                 cur.close()
     return jsonify({'success': False, 'message': 'Не удалось получить данные для удаления'}), 400
 
+
+# Воспроизведение случайной серии
+def find_video_file(video_name):
+    """Поиск файла по имени в VIDEO_DIR и возврат полного имени без расширения."""
+    for root, dirs, files in os.walk(VIDEO_DIR):
+        for file in files:
+            # Проверяем, содержит ли файл имя `video_name` и подходит ли по шаблону.
+            if video_name in file:
+                # Возвращаем полный путь и имя файла без расширения.
+                full_name = os.path.splitext(file)[0]
+                return os.path.join(root, file), full_name
+    return None, None
+
+def get_next_episode(current_video_name, series_name_pattern=None):
+    """
+    Получение следующей серии на основе текущего имени видео.
+    series_name_pattern - шаблон регулярного выражения для поиска названия сериала.
+    """
+    if not series_name_pattern:
+        series_name_pattern = r'(.*?)\s(\d+)x(\d+)'
+
+    match = re.match(series_name_pattern, current_video_name)
+    if match:
+        series_name = match.group(1).strip()
+        season = int(match.group(2))
+        episode = int(match.group(3))
+
+        next_episode = episode + 1
+        next_video_name = f"{series_name} {season}x{next_episode:02d}"
+
+        next_video_path, full_name = find_video_file(next_video_name)
+        if next_video_path:
+            return {
+                'path': next_video_path,
+                'name': full_name,  # Полное имя файла без расширения
+                'extension': next_video_path.split('.')[-1]
+            }
+
+        next_episode = 1
+        next_season = season + 1
+        next_video_name = f"{series_name} {next_season}x{next_episode:02d}"
+        next_video_path, full_name = find_video_file(next_video_name)
+
+        if next_video_path:
+            return {
+                'path': next_video_path,
+                'name': full_name,
+                'extension': next_video_path.split('.')[-1]
+            }
+
+    return None
+
+
 def get_random_video():
     """Получение случайного видео из указанной директории."""
     video_files = []
@@ -267,25 +317,57 @@ def get_random_video():
         for file in files:
             if file.endswith(('.mp4', '.mkv', '.avi')):
                 video_files.append(os.path.join(root, file))
-    return random.choice(video_files) if video_files else None
+
+    if video_files:
+        selected_video = random.choice(video_files)
+        relative_path = os.path.relpath(selected_video, VIDEO_DIR)
+        web_path = f"static/series/{relative_path}"
+        video_name = os.path.basename(selected_video).rsplit('.', 1)[0]
+        video_extension = os.path.basename(selected_video).split('.')[-1]
+        return {'path': web_path, 'video_name': video_name, 'extension': video_extension}
+
+    return None
+
 
 @app.route('/watch_random')
 def watch_random():
-    """Страница с видео-плеером."""
-    video_path = get_random_video()
-    if video_path:
-        return render_template('watch_random.html', video_path=video_path)
+    """Страница с видео-плеером для случайной серии."""
+    video = get_random_video()
+    if video:
+        return render_template('watch_random.html', video=video)
     else:
         return "Нет доступных видео для просмотра.", 404
 
+
 @app.route('/get_next_video')
 def get_next_video():
-    """Получение следующего видео."""
-    video_path = get_random_video()
-    if video_path:
-        return jsonify({'video_path': video_path})
+    """Маршрут для получения следующего видео."""
+    current_video_name = request.args.get('current_video_name')
+    next_video = get_next_episode(current_video_name)
+    if next_video:
+        return jsonify({
+            'video_path': next_video['path'],
+            'video_name': next_video['name'],
+            'video_extension': next_video['extension']
+        })
     else:
-        return jsonify({'video_path': None})
+        return jsonify({'video_path': None, 'video_name': None, 'video_extension': None})
+
+
+@app.route('/get_random')
+def get_random():
+    """Маршрут для получения случайного видео."""
+    random_video = get_random_video()
+    if random_video:
+        return jsonify({
+            'video_path': random_video['path'],
+            'video_name': random_video['video_name'],
+            'video_extension': random_video['extension']
+        })
+    else:
+        return jsonify({'video_path': None, 'video_name': None, 'video_extension': None})
+
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Главная</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='pics/7423721-648226759.png') }}">
 </head>
 <body>
@@ -18,13 +19,12 @@
         {% endif %}
         <a href="{{ url_for('watch_random') }}"><button>Я не знаю, что мне посмотреть</button></a>
 
-        <button id="goButton">Выберу из списка</button>
+        <button id="goButton">Выберу из моего списка</button>
         <div id="result"></div>
         <a id="addLink" href="{{ url_for('submit') }}">Посмотреть всю базу</a>
         <form method="POST" action="{{ url_for('logout') }}">
             <button type="submit" style="margin-top: 20px;">Выход</button>
         </form>        
     </div>
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
