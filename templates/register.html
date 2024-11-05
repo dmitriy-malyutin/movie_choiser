@@ -45,7 +45,7 @@
                 </div>
                 <div class="input-group">
                     <label for="phone">Телефон:</label>
-                    <input type="text" name="phone" value="{{ form_data.phone }}" placeholder="+7xxxxxxxxxx" required 
+                    <input type="text" name="phone" value="{{ form_data.phone }}" placeholder="+7xxxxxxxxxx" required
                     oninput="formatPhoneNumber(this)" pattern="^\+7\d{10}$">
                 </div>
                 <div class="input-group">
@@ -57,6 +57,6 @@
             <a href="{{ url_for('index') }}">Назад к авторизации</a>
         </div>
     </div>
-    
+
 </body>
 </html>

@@ -1,3 +1,4 @@
 venv
 connections.json
 test.py
+.pre-commit-config.yaml

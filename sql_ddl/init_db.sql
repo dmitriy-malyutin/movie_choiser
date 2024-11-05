@@ -78,11 +78,11 @@ CREATE TABLE app.movie_rooms_history (
     CONSTRAINT movie_rooms_history_rated_by_fkey FOREIGN KEY (rated_by) REFERENCES app.users(id) -- Внешний ключ для rated_by
 );
 
-CREATE OR REPLACE FUNCTION log_movie_room_deletion_history() 
+CREATE OR REPLACE FUNCTION log_movie_room_deletion_history()
 RETURNS TRIGGER AS $$
 BEGIN
     INSERT INTO app.movie_rooms_history (added_by, room_id, movie_id, created_at)
-    VALUES (OLD.added_by, OLD.room_id, OLD.movie_id, OLD.created_at); 
+    VALUES (OLD.added_by, OLD.room_id, OLD.movie_id, OLD.created_at);
     RETURN OLD;
 END;
 $$ LANGUAGE plpgsql;

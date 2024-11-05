@@ -31,5 +31,3 @@ Postgres любой версии
 ```bash
 ./start.sh
 ```
-
-
