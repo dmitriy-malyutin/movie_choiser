@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Все фильмы</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='pics/7423721-648226759.png') }}">
+</head>
+<body>
+    <h1>Список фильмов</h1>
+    <div class="table-container-big">
+        <table>
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Название</th>
+                    <th>Оценка</th>
+                    <th>Дата выхода</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for movie in movies %}
+                <tr>
+                    <td>
+                        <img src="https://image.tmdb.org/t/p/original{{ movie.poster_path }}" alt="{{ movie.title }}" style="width: 100px;">
+                    </td>
+                    <td>{{ movie.title }}</td>
+                    <td>{{ movie.vote_average }}</td>
+                    <td>{{ movie.release_date }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Навигация страниц -->
+    <div class="pagination">
+        {% if page > 1 %}
+        <a href="{{ url_for('all_movies', page=1) }}">В начало</a>
+        {% endif %}
+        {% if page > 1 %}
+            <a href="{{ url_for('all_movies', page=page - 1) }}">Предыдущая</a>
+        {% endif %}
+        <span>Страница {{ page }} из {{ total_pages }}</span>
+        {% if page < total_pages %}
+            <a href="{{ url_for('all_movies', page=page + 1) }}">Следующая</a>
+        {% endif %}
+        {% if page < total_pages %}
+        <a href="{{ url_for('all_movies', page=total_pages) }}">В конец</a>
+        {% endif %}
+    </div>
+    <a href="{{ url_for('home') }}">Назад на главную</a>
+</body>
+</html>

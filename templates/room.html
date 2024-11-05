@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Главная</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='pics/7423721-648226759.png') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Дубино-рощинский киноклуб</h1>
+        <!-- Блок для вывода сообщения -->
+        {% if message %}
+        <div class="alert {{ message_type }}">
+            {{ message }}
+            </div>
+        {% endif %}
+
+        <button id="goButton">Выбрать из моего списка</button>
+        <div id="result"></div>
+        <a id="addLink" href="{{ url_for('submit') }}" class="button">Мои фильмы</a>
+        <a href="{{ url_for('home') }}">Назад на главную</a>
+    </div>
+</body>
+</html>
