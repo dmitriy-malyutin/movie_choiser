@@ -64,7 +64,7 @@ def auth():
                         session.permanent = True
                         message = 'Успешный вход'
                         message_type = 'success'
-                        return redirect(url_for('room'))
+                        return redirect(url_for('home'))
                     else:
                         message = 'Пользователь не подтвержден'
                         message_type = 'warning'
@@ -163,11 +163,11 @@ def get_movies():
         cur.close()
     return movies
 
-@app.route('/room')
-def room():
+@app.route('/home')
+def home():
     """Главная страница после авторизации."""
     if 'user_id' in session:
-        return render_template('room.html')
+        return render_template('home.html')
     return render_template('index.html', message='Пожалуйста, войдите в систему', message_type='warning')
 
 @app.route('/submit', methods=['GET', 'POST'])
