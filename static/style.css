@@ -18,13 +18,13 @@ body {
 .container {
     width: 100%;
     max-width: 800px;
-    padding: 20px;
+    padding: 40px; /* Увеличено для дополнительного пространства */
     border-radius: 8px;
-    margin: 20px 0;
-    text-align: center; /* Центрирование текста внутри контейнера */
+    margin: 40px 0; /* Увеличенный отступ сверху и снизу */
+    text-align: center;
     display: flex;
     flex-direction: column;
-    align-items: center; /* Центрирование элементов внутри контейнера */
+    align-items: center;
 }
 
 /* Контейнер для таблицы */
@@ -38,7 +38,7 @@ body {
     overflow-x: auto;
     display: flex;
     flex-direction: column;
-    align-items: center; /* Центрирование таблицы внутри контейнера */
+    align-items: center;
 }
 
 /* Стили для таблицы */
@@ -50,13 +50,13 @@ table {
 
 /* Универсальный стиль для всех полей ввода */
 input {
-    width: 70%; /* Занимают оставшееся пространство */
+    width: 70%;
     padding: 10px;
     font-size: 14px;
-    border: none; /* Убираем все границы */
-    border-bottom: 1px solid #f5f5f5; /* Тонкая белая линия внизу */
+    border: none;
+    border-bottom: 1px solid #f5f5f5;
     color: #f5f5f5;
-    background-color: transparent; /* Прозрачный фон */
+    background-color: transparent;
 }
 
 /* Выровненные группы ввода */
@@ -64,16 +64,17 @@ input {
     display: flex;
     align-items: center;
     width: 100%;
-    margin: 10px 0;
+    margin: 10px 0; /* Увеличенный отступ между группами ввода */
 }
 
 /* Метка к каждому полю */
 label {
     font-size: 16px;
     color: #f5f5f5;
-    margin-right: 10px;
+    margin-right: 10px; /* Увеличенный отступ между меткой и полем ввода */
     flex: 0 0 30%;
 }
+
 /* Поля ввода */
 input[type="text"] {
     flex: 1;
@@ -90,55 +91,45 @@ input[type="text"]:focus {
 }
 
 input:focus {
-    outline: none; /* Убираем стандартное выделение */
-    border-bottom: 1px solid #c99700; /* Подсвечиваем нижнюю линию при фокусе */
+    outline: none;
+    border-bottom: 1px solid #c99700;
 }
 
 /* Универсальный стиль для всех кнопок */
 button {
-    background: none; /* Убираем фон */
-    border: none; /* Убираем границы */
-    color: #f5f5f5; /* Белый цвет текста */
+    background: none;
+    border: none;
+    color: #f5f5f5;
     font-size: 22px;
     cursor: pointer;
-    transition: color 0.3s; /* Плавный переход цвета */
+    transition: color 0.3s;
+    margin: 10px 0; /* Увеличенный отступ между кнопками */
 }
 
 button:hover {
-    color: #c99700; /* Золотистый цвет текста при наведении */
+    color: #c99700;
 }
 
 button:focus {
-    outline: none; /* Убираем обводку при фокусе */
+    outline: none;
 }
 
 /* Универсальный стиль для всех ссылок */
 a {
-    color: #c99700; /* Основной цвет ссылок */
+    color: #c99700;
     text-decoration: none;
+    font-size: 18px;
+    margin: 10px 0; /* Отступ между ссылками */
 }
 
 a:hover {
-    text-decoration: underline; /* Подчеркивание при наведении */
+    text-decoration: underline;
 }
 
 a:visited {
-    color: #c99700; /* Совпадает с обычным цветом ссылки */
+    color: #c99700;
 }
-
-
 
 th, td {
     padding: 12px;
-    border-bottom: 1px solid #f5f5f5;
-    color: #f5f5f5;
-    text-align: center; /* Центрирование текста внутри ячеек таблицы */
-}
-
-th {
-    background-color: #282828;
-}
-
-td {
-    background-color: #303030;
-}
+   
