@@ -11,18 +11,32 @@ DROP TABLE IF EXISTS app.users;
 CREATE TABLE app.users (
 	id serial4 NOT NULL,
 	login varchar NOT NULL,
-	"name" varchar NULL,
-	surname varchar NULL,
-	phone varchar NULL,
-	email varchar NULL,
+	"name" varchar,
+	surname varchar,
+	phone varchar,
+	email varchar,
+	birth_date date,
 	"password" varchar NOT NULL,
+	communication_consent bool DEFAULT false NOT NULL,
+	personal_data_consent bool DEFAULT false NOT NULL;
 	is_active bool DEFAULT false NOT NULL,
-	created_at timestamp DEFAULT now() NOT NULL,
-	updated_at timestamp DEFAULT now() NOT NULL,
-	birth_date date NULL,
-	CONSTRAINT unique_id UNIQUE (id),
-	CONSTRAINT unique_login UNIQUE (login)
+    created_at timestamp NOT NULL DEFAULT now(),
+    updated_at timestamp NOT NULL DEFAULT now()
 );
+
+COMMENT ON COLUMN app.users.id IS 'Уникальный ID пользователя';
+COMMENT ON COLUMN app.users.login IS 'Уникальный в ситсеме логин';
+COMMENT ON COLUMN app.users."name" IS 'Имя';
+COMMENT ON COLUMN app.users.surname IS 'Фамилия';
+COMMENT ON COLUMN app.users.phone IS 'Номер телефона';
+COMMENT ON COLUMN app.users.email IS 'Электронная почта';
+COMMENT ON COLUMN app.users."password" IS 'Пароль';
+COMMENT ON COLUMN app.users.is_active IS 'Признак активности пользователя';
+COMMENT ON COLUMN app.users.created_at IS 'Дата создания аккаунта';
+COMMENT ON COLUMN app.users.updated_at IS 'Дата и время обновления аккаунта';
+COMMENT ON COLUMN app.users.birth_date IS 'Дата рожждения';
+COMMENT ON COLUMN app.users.communication_consent IS 'Согласие на коммуникацию по смс и емейлам';
+COMMENT ON COLUMN app.users.personal_data_consent IS 'Согласие на обработку и персональных данных и её передачу третьим лицам';
 
 -- rooms
 DROP TABLE IF EXISTS app.rooms;

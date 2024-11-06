@@ -115,6 +115,8 @@ def register():
         "email": "",
         "phone": "",
         "birth_date": "",
+        "communication_consent": False,
+        "personal_data_consent": False
     }
 
     if request.method == "POST":
@@ -126,10 +128,18 @@ def register():
         form_data["phone"] = request.form.get("phone", "")
         form_data["birth_date"] = request.form.get("birth_date", "")
 
+        # Проверка нажатия чекбоксов
+        form_data["communication_consent"] = request.form.get("communication_consent") == "on"
+        form_data["personal_data_consent"] = request.form.get("personal_data_consent") == "on"
+
         password = request.form["password"]
         confirm_password = request.form["confirm_password"]
 
-        if password != confirm_password:
+        # Проверка согласия на обработку и коммуникации
+        if not form_data["communication_consent"] or not form_data["personal_data_consent"]:
+            message = "Согласие на обработку и коммуникации необходимо для продолжения регистрации."
+            message_type = "warning"
+        elif password != confirm_password:
             message = "Пароли не совпадают. Пожалуйста, попробуйте снова."
             message_type = "warning"
         else:
@@ -151,8 +161,8 @@ def register():
 
                         # Вставка нового пользователя
                         cur.execute(
-                            "INSERT INTO app.users (login, password, name, surname, email, phone, birth_date) "
-                            "VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                            "INSERT INTO app.users (login, password, name, surname, email, phone, birth_date, personal_data_consent, communication_consent) "
+                            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
                             (
                                 form_data["username"],
                                 hashed_password,
@@ -161,6 +171,8 @@ def register():
                                 form_data["email"],
                                 form_data["phone"],
                                 form_data["birth_date"],
+                                form_data["personal_data_consent"],
+                                form_data["communication_consent"]
                             ),
                         )
                         conn.commit()

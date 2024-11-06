@@ -163,3 +163,35 @@ a:visited {
 th, td {
     padding: 12px;
 }
+
+/* Основной контейнер для чекбоксов */
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 800px;
+    margin-top: 10px;
+}
+
+/* Контейнер для текста, занимающий 80% ширины */
+.checkbox-text {
+    flex: 0 0 80%; /* Ограничение на 80% ширины */
+    font-size: 13px;
+    color: #f5f5f5;
+    line-height: 1.4;
+    text-align: left;
+}
+
+/* Контейнер для чекбоксов, занимающий 20% ширины */
+.checkbox-box {
+    flex: 0 0 20%; /* Ограничение на 20% ширины */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Убираем отступы вокруг чекбоксов */
+.checkbox-box input[type="checkbox"] {
+    margin: 0;
+}
+

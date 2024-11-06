@@ -52,6 +52,22 @@
                     <label for="birth_date">Дата рождения:</label>
                     <input type="date" name="birth_date" value="{{ form_data.birth_date }}"  required>
                 </div>
+                <div class="checkbox-container">
+                    <div class="checkbox-box">
+                        <input type="checkbox" name="communication_consent">
+                    </div>
+                    <div class="checkbox-text">
+                        Согласен на получение информации по SMS и email
+                    </div>
+                </div>
+                <div class="checkbox-container">
+                    <div class="checkbox-box">
+                        <input type="checkbox" name="personal_data_consent">
+                    </div>
+                    <div class="checkbox-text">
+                        Согласен на обработку персональных данных и их передачу третьим лицам
+                    </div>
+                </div>
                 <button type="submit">Зарегистрироваться</button>
             </form>
             <a href="{{ url_for('index') }}">Назад к авторизации</a>
